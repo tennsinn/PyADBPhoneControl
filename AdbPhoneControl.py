@@ -37,6 +37,11 @@ class AdbPhoneControl():
 		cmd.extend(args)
 		return self.run_cmd(cmd)
 
+	def adb_shell_dumpsys(self, activity, grep):
+		cmd = ['adb', 'shell', 'dumpsys']
+		cmd.extend([activity, '| grep', grep])
+		return self.run_cmd(cmd)
+
 	def get_system_volume(self, usecase, scenario):
 		args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
 		try:
@@ -68,6 +73,16 @@ class AdbPhoneControl():
 				cnt += 1
 			else:
 				last = current
+
+	def get_call_state(self, sim=0):
+		ret = self.adb_shell_dumpsys('telephony.registry', 'mCallState')
+		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
+		if sim > len(states) or sim < 0:
+			raise Exception('The specified SIM card do not exist!')
+		elif sim > 0:
+			return states[sim-1]
+		else:
+			return states
 
 if __name__ == '__main__':
 	adb = AdbPhoneControl()
