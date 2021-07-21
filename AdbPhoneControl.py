@@ -77,6 +77,7 @@ class AdbPhoneControl():
 	def get_call_state(self, sim=0):
 		ret = self.adb_shell_dumpsys('telephony.registry', 'mCallState')
 		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
+		# 0:idle, 1:ringing, 2:incall
 		if sim > len(states) or sim < 0:
 			raise Exception('The specified SIM card do not exist!')
 		elif sim > 0:
