@@ -42,6 +42,11 @@ class AdbPhoneControl():
 		cmd.extend([activity, '| grep', grep])
 		return self.run_cmd(cmd)
 
+	def adb_shell_input(self, args):
+		cmd = ['adb', 'shell', 'input']
+		cmd.extend(args)
+		self.run_cmd(cmd)
+
 	def get_system_volume(self, usecase, scenario):
 		args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
 		try:
@@ -50,8 +55,8 @@ class AdbPhoneControl():
 			print('Get system volume fail!')
 
 	def key_volume(self, key):
-		args = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_VOLUME_'+key]
-		self.run_cmd(args)
+		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
+		self.adb_shell_input(args)
 
 	def set_vol_by_key(self, target, usecase, scenario):
 		usecases = ['music', 'voice']
