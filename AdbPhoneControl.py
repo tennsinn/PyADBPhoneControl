@@ -58,7 +58,26 @@ class AdbPhoneControl():
 		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
 		self.adb_shell_input(args)
 
-	def set_vol_by_key(self, target, usecase, scenario):
+	def get_target_vol(self, volume, usecase, scenario):
+		if usecase == 'voice':
+			MAXVOL = 8
+		else:
+			MAXVOL = 15
+		if scenario == 'speaker':
+			NOMVOL = 5
+		else:
+			NOMVOL = 4
+		MINVOL = 1
+		if type(volume) == str:
+			volume = volume.replace('MAX', 'MAXVOL').replace('MIN', 'MINVOL').replace('NOM', 'NOMVOL')
+			volume = eval(volume)
+		if type(volume) == int or volume.isdigit():
+			target = int(volume)
+		else :
+			raise Exception('Required volume not right.')
+		return max(min(target, MAXVOL), MINVOL)
+
+	def set_vol_by_key(self, volume, usecase, scenario):
 		usecases = ['music', 'voice']
 		if usecase not in usecases:
 			raise Exception('The usecase is not supported!')
@@ -66,6 +85,7 @@ class AdbPhoneControl():
 		if scenario not in scenarios:
 			raise Exception('The scenario is not supported!')
 		cnt = 0
+		target = self.get_target_vol(volume, usecase, scenario)
 		last = current = self.get_system_volume(usecase, scenario)
 		while current != target and cnt < 3:
 			if current > target:
