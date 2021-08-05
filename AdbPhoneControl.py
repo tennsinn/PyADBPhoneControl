@@ -111,6 +111,3 @@ class AdbPhoneControl():
 			return states[sim-1]
 		else:
 			return states
-
-if __name__ == '__main__':
-	adb = AdbPhoneControl()
