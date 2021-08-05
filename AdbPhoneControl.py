@@ -98,6 +98,8 @@ class AdbPhoneControl():
 				cnt += 1
 			else:
 				last = current
+			if cnt >= 3:
+				raise Exception('Fail to set the target volume!')
 
 	def get_call_state(self, sim=0):
 		ret = self.adb_shell_dumpsys('telephony.registry', 'mCallState')
