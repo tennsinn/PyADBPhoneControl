@@ -4,28 +4,47 @@ import time
 
 class AdbPhoneControl():
 	def __init__(self, id=None):
-		self.adb_devices(id)
+		self.connected = None
+		self.connect(id)
 
 	def run_cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 		return ret.stdout.strip()
 
-	def adb_devices(self, id=None):
-		ret = self.run_cmd(['adb', 'devices'])
-		devices = re.findall(r'^([a-zA-Z0-9]*)\s*?device$', ret, flags=re.M)
-		cnt = len(devices)
+	def connect(self, id=None, err=False):
+		ret = self.adb_devices()
+		cnt = len(ret)
 		if cnt < 1:
-			raise Exception('No device connected!')
-		elif cnt > 1:
-			raise Exception('More than one devices connected!')
-		elif 'unauthorized' in ret:
-			raise Exception('Connected device is production builds, please allow the USB debugging!')
-		elif not id:
-			self.id = devices[0]
-		elif id not in devices:
-			raise Exception('The required device is not connected!')
+			self.connected = None
+			msg = 'No device connected!'
+		elif id:
+			if id not in ret:
+				self.connected = None
+				msg = 'The selected device is not connected!'
+			elif 'unauthorized' == ret[id]:
+				self.connected = None
+				msg = 'Selected device is production builds, please allow the USB debugging!'
+			else:
+				self.connected = id
+				msg = 'Successfully connect to the selected device.'
 		else:
-			self.id = id
+			id = list(ret)[0]
+			if 'unauthorized' == ret[id]:
+				self.connected = None
+				msg = 'Connected device is production builds, please allow the USB debugging!'
+			else:
+				self.connected = id
+				if cnt > 1:
+					msg = 'More than one devices connected, successfully connect to the first device.'
+				else:
+					msg = 'Successfully connect to the connected device.'
+		if err:
+			return msg
+
+	def adb_devices(self):
+		ret = self.run_cmd(['adb', 'devices'])
+		devices = re.findall(r'^([a-zA-Z0-9]*)\s*?(device|unauthorized)$', ret, flags=re.M)
+		return dict(devices)
 
 	def adb_root(self):
 		ret = self.run_cmd(['adb', 'root'])
