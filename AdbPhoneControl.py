@@ -77,26 +77,19 @@ class AdbPhoneControl():
 		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
 		self.adb_shell_input(args)
 
-	def get_target_vol(self, volume, usecase, scenario):
-		if usecase == 'voice':
-			MAXVOL = 8
-		else:
-			MAXVOL = 15
-		if scenario == 'speaker':
-			NOMVOL = 5
-		else:
-			NOMVOL = 4
-		MINVOL = 1
-		if type(volume) == str:
-			volume = volume.replace('MAX', 'MAXVOL').replace('MIN', 'MINVOL').replace('NOM', 'NOMVOL')
-			volume = eval(volume)
-		if type(volume) == int or volume.isdigit():
+	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
+		if volume and (type(volume) == int or (type(volume) == str and volume.isdigit())):
 			target = int(volume)
+		elif volume and type(volume) == str and re.fullmatch(r'^(MAX|NOM|MIN)?(\+|\-)?\d*$', volume, re.I):
+			if NOMVol == None and 'NOM' in volume.upper():
+				raise Exception('Missing value of NOM volume!')
+			volume = re.sub(r'(MAX|NOM|MIN)', r'\1Vol', volume.upper(), 0)
+			target = eval(volume)
 		else :
-			raise Exception('Required volume not right.')
-		return max(min(target, MAXVOL), MINVOL)
+			raise Exception('Invalid volume value!')
+		return max(min(target, MAXVol), MINVol)
 
-	def set_vol_by_key(self, volume, usecase, scenario):
+	def set_vol_by_key(self, usecase, scenario, volume, MINVol, MAXVol, NOMVol):
 		usecases = ['music', 'voice']
 		if usecase not in usecases:
 			raise Exception('The usecase is not supported!')
@@ -104,7 +97,7 @@ class AdbPhoneControl():
 		if scenario not in scenarios:
 			raise Exception('The scenario is not supported!')
 		cnt = 0
-		target = self.get_target_vol(volume, usecase, scenario)
+		target = self.get_target_vol(volume, MINVol, MAXVol, NOMVol)
 		last = current = self.get_system_volume(usecase, scenario)
 		while current != target and cnt < 3:
 			if current > target:
@@ -130,3 +123,49 @@ class AdbPhoneControl():
 			return states[sim-1]
 		else:
 			return states
+
+	def checkVolChange(self, usecase, scenario):
+		flag = False
+		last = current = self.get_system_volume(usecase, scenario)
+		self.key_volume('UP')
+		time.sleep(0.5)
+		self.key_volume('UP')
+		time.sleep(0.5)
+		current = self.get_system_volume(usecase, scenario)
+		if current > last:
+			flag = True
+		last = current = self.get_system_volume(usecase, scenario)
+		self.key_volume('DOWN')
+		time.sleep(0.5)
+		self.key_volume('DOWN')
+		time.sleep(0.5)
+		current = self.get_system_volume(usecase, scenario)
+		if current < last:
+			flag = True
+		return flag
+
+	def getMINVol(self, usecase, scenario):
+		cnt = 0
+		last = current = self.get_system_volume(usecase, scenario)
+		while cnt < 3:
+			self.key_volume('DOWN')
+			time.sleep(0.5)
+			current = self.get_system_volume(usecase, scenario)
+			if current < last:
+				last = current
+			else:
+				cnt += 1
+		return current
+
+	def getMAXVol(self, usecase, scenario):
+		cnt = 0
+		last = current = self.get_system_volume(usecase, scenario)
+		while cnt < 3:
+			self.key_volume('UP')
+			time.sleep(0.5)
+			current = self.get_system_volume(usecase, scenario)
+			if current > last:
+				last = current
+			else:
+				cnt += 1
+		return current
