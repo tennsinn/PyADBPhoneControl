@@ -3,37 +3,37 @@ import re
 import time
 
 class AdbPhoneControl():
-	def __init__(self, id=None):
+	def __init__(self, sn=None):
 		self.connected = None
-		self.connect(id)
+		self.connect(sn)
 
 	def run_cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 		return ret.stdout.strip()
 
-	def connect(self, id=None, err=False):
+	def connect(self, sn=None, err=False):
 		ret = self.adb_devices()
 		cnt = len(ret)
 		if cnt < 1:
 			self.connected = None
 			msg = 'No device connected!'
-		elif id:
-			if id not in ret:
+		elif sn:
+			if sn not in ret:
 				self.connected = None
 				msg = 'The selected device is not connected!'
-			elif 'unauthorized' == ret[id]:
+			elif 'unauthorized' == ret[sn]:
 				self.connected = None
 				msg = 'Selected device is production builds, please allow the USB debugging!'
 			else:
-				self.connected = id
+				self.connected = sn
 				msg = 'Successfully connect to the selected device.'
 		else:
-			id = list(ret)[0]
-			if 'unauthorized' == ret[id]:
+			sn = list(ret)[0]
+			if 'unauthorized' == ret[sn]:
 				self.connected = None
 				msg = 'Connected device is production builds, please allow the USB debugging!'
 			else:
-				self.connected = id
+				self.connected = sn
 				if cnt > 1:
 					msg = 'More than one devices connected, successfully connect to the first device.'
 				else:
