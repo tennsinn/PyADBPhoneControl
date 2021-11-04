@@ -56,9 +56,10 @@ class AdbPhoneControl():
 		cmd.extend(args)
 		return self.run_cmd(cmd)
 
-	def adb_shell_dumpsys(self, activity, grep):
-		cmd = ['adb', 'shell', 'dumpsys']
-		cmd.extend([activity, '| grep', grep])
+	def adb_shell_dumpsys(self, activity, grep=None):
+		cmd = ['adb', 'shell', 'dumpsys', activity]
+		if grep:
+			cmd.extend(['| grep', grep])
 		return self.run_cmd(cmd)
 
 	def adb_shell_input(self, args):
@@ -144,28 +145,9 @@ class AdbPhoneControl():
 			flag = True
 		return flag
 
-	def getMINVol(self, usecase, scenario):
-		cnt = 0
-		last = current = self.get_system_volume(usecase, scenario)
-		while cnt < 3:
-			self.key_volume('DOWN')
-			time.sleep(0.5)
-			current = self.get_system_volume(usecase, scenario)
-			if current < last:
-				last = current
-			else:
-				cnt += 1
-		return current
-
-	def getMAXVol(self, usecase, scenario):
-		cnt = 0
-		last = current = self.get_system_volume(usecase, scenario)
-		while cnt < 3:
-			self.key_volume('UP')
-			time.sleep(0.5)
-			current = self.get_system_volume(usecase, scenario)
-			if current > last:
-				last = current
-			else:
-				cnt += 1
-		return current
+	def getStreamVolumes(self, stream):
+		ret = self.adb_shell_dumpsys('audio')
+		states = re.search(r'- STREAM_'+stream+r':\n *Muted: *(?P<Muted>true|false)\n *Muted Internally: *(?P<MutedInternally>true|false)\n *Min: *(?P<Min>\d+)\n *Max: *(?P<Max>\d+)\n *streamVolume: *(?P<streamVolume>\d+)\n *Current: *(?P<Current>.*?)\n *Devices: *(?P<Devices>.*?)\n', ret, re.S)
+		if not states:
+			raise Exception('Do not find the related stream volumes.')
+		return states.groupdict()
