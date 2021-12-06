@@ -7,12 +7,12 @@ class AdbPhoneControl():
 		self.connected = None
 		self.connect(sn)
 
-	def run_cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
+	def cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 		return ret.stdout.strip()
 
 	def connect(self, sn=None, err=False):
-		ret = self.adb_devices()
+		ret = self.devices()
 		cnt = len(ret)
 		if cnt < 1:
 			self.connected = None
@@ -41,42 +41,42 @@ class AdbPhoneControl():
 		if err:
 			return msg
 
-	def adb_devices(self):
-		ret = self.run_cmd(['adb', 'devices'])
+	def devices(self):
+		ret = self.cmd(['adb', 'devices'])
 		devices = re.findall(r'^([a-zA-Z0-9]*)\s*?(device|unauthorized)$', ret, flags=re.M)
 		return dict(devices)
 
-	def adb_root(self):
-		ret = self.run_cmd(['adb', 'root'])
+	def root(self):
+		ret = self.cmd(['adb', 'root'])
 		if 'adbd as root' not in ret:
 			raise Exception('Run adb root fail!')
 
-	def adb_shell_settings(self, args):
+	def settings(self, args):
 		cmd = ['adb', 'shell', 'settings']
 		cmd.extend(args)
-		return self.run_cmd(cmd)
+		return self.cmd(cmd)
 
-	def adb_shell_dumpsys(self, activity, grep=None):
+	def dumpsys(self, activity, grep=None):
 		cmd = ['adb', 'shell', 'dumpsys', activity]
 		if grep:
 			cmd.extend(['| grep', grep])
-		return self.run_cmd(cmd)
+		return self.cmd(cmd)
 
-	def adb_shell_input(self, args):
+	def input(self, args):
 		cmd = ['adb', 'shell', 'input']
 		cmd.extend(args)
-		self.run_cmd(cmd)
+		self.cmd(cmd)
 
 	def get_system_volume(self, usecase, scenario):
 		args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
 		try:
-			return int(self.adb_shell_settings(args))
+			return int(self.settings(args))
 		except:
 			print('Get system volume fail!')
 
 	def key_volume(self, key):
 		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
-		self.adb_shell_input(args)
+		self.input(args)
 
 	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
 		if volume and (type(volume) == int or (type(volume) == str and volume.isdigit())):
@@ -115,7 +115,7 @@ class AdbPhoneControl():
 				raise Exception('Fail to set the target volume!')
 
 	def get_call_state(self, sim=0):
-		ret = self.adb_shell_dumpsys('telephony.registry', 'mCallState')
+		ret = self.dumpsys('telephony.registry', 'mCallState')
 		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
 		# 0:idle, 1:ringing, 2:incall
 		if sim > len(states) or sim < 0:
@@ -146,7 +146,7 @@ class AdbPhoneControl():
 		return flag
 
 	def getStreamVolumes(self, stream):
-		ret = self.adb_shell_dumpsys('audio')
+		ret = self.dumpsys('audio')
 		states = re.search(r'- STREAM_'+stream+r':\n *Muted: *(?P<Muted>true|false)\n *Muted Internally: *(?P<MutedInternally>true|false)\n *Min: *(?P<Min>\d+)\n *Max: *(?P<Max>\d+)\n *streamVolume: *(?P<streamVolume>\d+)\n *Current: *(?P<Current>.*?)\n *Devices: *(?P<Devices>.*?)\n', ret, re.S)
 		if not states:
 			raise Exception('Do not find the related stream volumes.')
