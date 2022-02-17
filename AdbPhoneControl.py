@@ -16,30 +16,37 @@ class AdbPhoneControl():
 		cnt = len(ret)
 		if cnt < 1:
 			self.connected = None
+			err = True
 			msg = 'No device connected!'
 		elif sn:
 			if sn not in ret:
 				self.connected = None
+				err = True
 				msg = 'The selected device is not connected!'
 			elif 'unauthorized' == ret[sn]:
 				self.connected = None
+				err = True
 				msg = 'Selected device is production builds, please allow the USB debugging!'
 			else:
 				self.connected = sn
+				err = False
 				msg = 'Successfully connect to the selected device.'
 		else:
 			sn = list(ret)[0]
 			if 'unauthorized' == ret[sn]:
 				self.connected = None
+				err = True
 				msg = 'Connected device is production builds, please allow the USB debugging!'
 			else:
 				self.connected = sn
+				err = False
 				if cnt > 1:
 					msg = 'More than one devices connected, successfully connect to the first device.'
 				else:
 					msg = 'Successfully connect to the connected device.'
 		if err:
-			return msg
+			raise Exception(msg)
+		return msg
 
 	def devices(self):
 		ret = self.cmd(['adb', 'devices'])
