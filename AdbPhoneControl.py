@@ -121,7 +121,7 @@ class AdbPhoneControl():
 			if cnt >= 3:
 				raise Exception('Fail to set the target volume!')
 
-	def get_call_state(self, sim=0):
+	def call_state(self, sim=0):
 		ret = self.dumpsys('telephony.registry', 'mCallState')
 		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
 		# 0:idle, 1:ringing, 2:incall
@@ -132,7 +132,7 @@ class AdbPhoneControl():
 		else:
 			return states
 
-	def checkVolChange(self, usecase, scenario):
+	def check_vol_change(self, usecase, scenario):
 		flag = False
 		last = current = self.get_system_volume(usecase, scenario)
 		self.key_volume('UP')
@@ -152,7 +152,7 @@ class AdbPhoneControl():
 			flag = True
 		return flag
 
-	def getStreamVolumes(self, stream):
+	def stream_volumes(self, stream):
 		ret = self.dumpsys('audio')
 		states = re.search(r'- STREAM_'+stream+r':\n *Muted: *(?P<Muted>true|false)\n *Muted Internally: *(?P<MutedInternally>true|false)\n *Min: *(?P<Min>\d+)\n *Max: *(?P<Max>\d+)\n *streamVolume: *(?P<streamVolume>\d+)\n *Current: *(?P<Current>.*?)\n *Devices: *(?P<Devices>.*?)\n', ret, re.S)
 		if not states:
