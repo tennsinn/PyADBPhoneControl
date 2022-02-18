@@ -81,8 +81,27 @@ class AdbPhoneControl():
 		except:
 			print('Get system volume fail!')
 
-	def key_volume(self, key):
-		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
+	def key(self, keycode):
+		if keycode.isdigit():
+			args = ['keyevent', keycode]
+		else:
+			args = ['keyevent', 'KEYCODE_'+keycode]
+		self.input(args)
+
+	def key_volume_up(self):
+		args = ['keyevent', 'KEYCODE_VOLUME_UP']
+		self.input(args)
+
+	def key_volume_down(self):
+		args = ['keyevent', 'KEYCODE_VOLUME_DOWN']
+		self.input(args)
+
+	def key_call(self):
+		args = ['keyevent', 'KEYCODE_CALL']
+		self.input(args)
+
+	def key_endcall(self):
+		args = ['keyevent', 'KEYCODE_ENDCALL']
 		self.input(args)
 
 	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
