@@ -81,8 +81,27 @@ class AdbPhoneControl():
 		except:
 			print('Get system volume fail!')
 
-	def key_volume(self, key):
-		args = ['keyevent', 'KEYCODE_VOLUME_'+key]
+	def key(self, keycode):
+		if keycode.isdigit():
+			args = ['keyevent', keycode]
+		else:
+			args = ['keyevent', 'KEYCODE_'+keycode]
+		self.input(args)
+
+	def key_volume_up(self):
+		args = ['keyevent', 'KEYCODE_VOLUME_UP']
+		self.input(args)
+
+	def key_volume_down(self):
+		args = ['keyevent', 'KEYCODE_VOLUME_DOWN']
+		self.input(args)
+
+	def key_call(self):
+		args = ['keyevent', 'KEYCODE_CALL']
+		self.input(args)
+
+	def key_endcall(self):
+		args = ['keyevent', 'KEYCODE_ENDCALL']
 		self.input(args)
 
 	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
@@ -109,9 +128,9 @@ class AdbPhoneControl():
 		last = current = self.get_system_volume(usecase, scenario)
 		while current != target and cnt < 3:
 			if current > target:
-				self.key_volume('DOWN')
+				self.key_volume_down()
 			elif current < target:
-				self.key_volume('UP')
+				self.key_volume_up()
 			time.sleep(0.5)
 			current = self.get_system_volume(usecase, scenario)
 			if current == last:
@@ -135,17 +154,17 @@ class AdbPhoneControl():
 	def check_vol_change(self, usecase, scenario):
 		flag = False
 		last = current = self.get_system_volume(usecase, scenario)
-		self.key_volume('UP')
+		self.key_volume_up()
 		time.sleep(0.5)
-		self.key_volume('UP')
+		self.key_volume_up()
 		time.sleep(0.5)
 		current = self.get_system_volume(usecase, scenario)
 		if current > last:
 			flag = True
 		last = current = self.get_system_volume(usecase, scenario)
-		self.key_volume('DOWN')
+		self.key_volume_down()
 		time.sleep(0.5)
-		self.key_volume('DOWN')
+		self.key_volume_down()
 		time.sleep(0.5)
 		current = self.get_system_volume(usecase, scenario)
 		if current < last:
