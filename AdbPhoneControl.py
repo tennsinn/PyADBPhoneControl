@@ -5,7 +5,6 @@ import time
 class AdbPhoneControl():
 	def __init__(self, sn=None):
 		self.connected = None
-		self.connect(sn)
 
 	def cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
