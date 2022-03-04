@@ -127,7 +127,8 @@ class AdbPhoneControl():
 		args = ['keyevent', 'KEYCODE_ENDCALL']
 		AdbPhoneControl.input(args)
 
-	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
+	@staticmethod
+	def get_target_vol(volume, MINVol, MAXVol, NOMVol=None):
 		if volume and (type(volume) == int or (type(volume) == str and volume.isdigit())):
 			target = int(volume)
 		elif volume and type(volume) == str and re.fullmatch(r'^(MAX|NOM|MIN)?(\+|\-)?\d*$', volume, re.I):
@@ -139,23 +140,17 @@ class AdbPhoneControl():
 			raise Exception('Invalid volume value!')
 		return max(min(target, MAXVol), MINVol)
 
-	def set_vol_by_key(self, usecase, scenario, volume, MINVol, MAXVol, NOMVol):
-		usecases = ['music', 'voice']
-		if usecase not in usecases:
-			raise Exception('The usecase is not supported!')
-		scenarios = ['earpiece', 'headset', 'speaker']
-		if scenario not in scenarios:
-			raise Exception('The scenario is not supported!')
+	@staticmethod
+	def set_vol_by_key(usecase, scenario, volume, MINVol, MAXVol, NOMVol):
 		cnt = 0
-		target = self.get_target_vol(volume, MINVol, MAXVol, NOMVol)
-		last = current = self.get_system_volume(usecase, scenario)
+		target = AdbPhoneControl.get_target_vol(volume, MINVol, MAXVol, NOMVol)
+		last = current = AdbPhoneControl.get_system_volume(usecase, scenario)
 		while current != target and cnt < 3:
 			if current > target:
-				self.key_volume_down()
+				AdbPhoneControl.key_volume_down()
 			elif current < target:
-				self.key_volume_up()
-			time.sleep(0.5)
-			current = self.get_system_volume(usecase, scenario)
+				AdbPhoneControl.key_volume_up()
+			current = AdbPhoneControl.get_system_volume(usecase, scenario)
 			if current == last:
 				cnt += 1
 			else:
