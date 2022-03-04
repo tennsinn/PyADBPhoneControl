@@ -2,6 +2,11 @@ import subprocess
 import re
 import time
 
+class AdbCallState():
+	IDLE = '0'
+	RING = '1'
+	INCALL = '2'
+
 class AdbPhoneControl():
 	def __init__(self, sn=None):
 		self.connected = None
@@ -154,7 +159,6 @@ class AdbPhoneControl():
 	def call_state(sim=0):
 		ret = AdbPhoneControl.dumpsys('telephony.registry', 'mCallState')
 		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
-		# 0:idle, 1:ringing, 2:incall
 		if sim > len(states) or sim < 0:
 			raise Exception('The specified SIM card do not exist!')
 		elif sim > 0:
