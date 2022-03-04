@@ -84,12 +84,18 @@ class AdbPhoneControl():
 		cmd.extend(args)
 		AdbPhoneControl.cmd(cmd)
 
-	def get_system_volume(self, usecase, scenario):
+	@staticmethod
+	def get_system_volume(usecase, scenario):
 		args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
-		try:
-			return int(self.settings(args))
-		except:
-			print('Get system volume fail!')
+		vol = AdbPhoneControl.settings(args)
+		if 'null' == vol:
+			AdbPhoneControl.key_volume_up()
+			AdbPhoneControl.key_volume_down()
+			vol = AdbPhoneControl.settings(args)
+		if vol.isdigit():
+			return int(vol)
+		else:
+			raise Exception('Fail to get the required system volume!')
 
 	@staticmethod
 	def key(keycode):
@@ -103,11 +109,13 @@ class AdbPhoneControl():
 	def key_volume_up():
 		args = ['keyevent', 'KEYCODE_VOLUME_UP']
 		AdbPhoneControl.input(args)
+		time.sleep(0.5)
 
 	@staticmethod
 	def key_volume_down():
 		args = ['keyevent', 'KEYCODE_VOLUME_DOWN']
 		AdbPhoneControl.input(args)
+		time.sleep(0.5)
 
 	@staticmethod
 	def key_call():
