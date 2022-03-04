@@ -8,50 +8,51 @@ class AdbCallState():
 	INCALL = '2'
 
 class AdbPhoneControl():
-	def __init__(self, sn=None):
-		self.connected = None
 
 	@staticmethod
 	def cmd(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 		return ret.stdout.strip()
 
-	def connect(self, sn=None, err=False):
-		ret = self.devices()
+	@staticmethod
+	def connected(sn=None, m=False):
+		ret = AdbPhoneControl.devices()
 		cnt = len(ret)
 		if cnt < 1:
-			self.connected = None
+			connected = False
 			err = True
 			msg = 'No device connected!'
 		elif sn:
 			if sn not in ret:
-				self.connected = None
+				connected = False
 				err = True
 				msg = 'The selected device is not connected!'
 			elif 'unauthorized' == ret[sn]:
-				self.connected = None
+				connected = False
 				err = True
 				msg = 'Selected device is production builds, please allow the USB debugging!'
 			else:
-				self.connected = sn
+				connected = True
 				err = False
 				msg = 'Successfully connect to the selected device.'
 		else:
 			sn = list(ret)[0]
 			if 'unauthorized' == ret[sn]:
-				self.connected = None
+				connected = False
 				err = True
 				msg = 'Connected device is production builds, please allow the USB debugging!'
 			else:
-				self.connected = sn
+				connected = True
 				err = False
 				if cnt > 1:
 					msg = 'More than one devices connected, successfully connect to the first device.'
 				else:
 					msg = 'Successfully connect to the connected device.'
-		if err:
+		if m and err:
 			raise Exception(msg)
-		return msg
+		elif m:
+			print(msg)
+		return connected
 
 	@staticmethod
 	def devices():
@@ -169,28 +170,25 @@ class AdbPhoneControl():
 		else:
 			return states
 
-	def check_vol_change(self, usecase, scenario):
+	@staticmethod
+	def check_vol_change(usecase, scenario):
 		flag = False
-		last = current = self.get_system_volume(usecase, scenario)
-		self.key_volume_up()
-		time.sleep(0.5)
-		self.key_volume_up()
-		time.sleep(0.5)
-		current = self.get_system_volume(usecase, scenario)
+		last = current = AdbPhoneControl.get_system_volume(usecase, scenario)
+		AdbPhoneControl.key_volume_up()
+		current = AdbPhoneControl.get_system_volume(usecase, scenario)
 		if current > last:
 			flag = True
-		last = current = self.get_system_volume(usecase, scenario)
-		self.key_volume_down()
-		time.sleep(0.5)
-		self.key_volume_down()
-		time.sleep(0.5)
-		current = self.get_system_volume(usecase, scenario)
-		if current < last:
-			flag = True
+		else:
+			last = current = AdbPhoneControl.get_system_volume(usecase, scenario)
+			AdbPhoneControl.key_volume_down()
+			current = AdbPhoneControl.get_system_volume(usecase, scenario)
+			if current < last:
+				flag = True
 		return flag
 
-	def stream_volumes(self, stream):
-		ret = self.dumpsys('audio')
+	@staticmethod
+	def stream_volumes(stream):
+		ret = AdbPhoneControl.dumpsys('audio')
 		states = re.search(r'- STREAM_'+stream+r':\n *Muted: *(?P<Muted>true|false)\n *Muted Internally: *(?P<MutedInternally>true|false)\n *Min: *(?P<Min>\d+)\n *Max: *(?P<Max>\d+)\n *streamVolume: *(?P<streamVolume>\d+)\n *Current: *(?P<Current>.*?)\n *Devices: *(?P<Devices>.*?)\n', ret, re.S)
 		if not states:
 			raise Exception('Do not find the related stream volumes.')
