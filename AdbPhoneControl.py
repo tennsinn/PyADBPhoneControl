@@ -6,7 +6,8 @@ class AdbPhoneControl():
 	def __init__(self, sn=None):
 		self.connected = None
 
-	def cmd(self, cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
+	@staticmethod
+	def cmd(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 		return ret.stdout.strip()
 
@@ -47,31 +48,36 @@ class AdbPhoneControl():
 			raise Exception(msg)
 		return msg
 
-	def devices(self):
-		ret = self.cmd(['adb', 'devices'])
+	@staticmethod
+	def devices():
+		ret = AdbPhoneControl.cmd(['adb', 'devices'])
 		devices = re.findall(r'^([a-zA-Z0-9]*)\s*?(device|unauthorized)$', ret, flags=re.M)
 		return dict(devices)
 
-	def root(self):
-		ret = self.cmd(['adb', 'root'])
+	@staticmethod
+	def root():
+		ret = AdbPhoneControl.cmd(['adb', 'root'])
 		if 'adbd as root' not in ret:
 			raise Exception('Run adb root fail!')
 
-	def settings(self, args):
+	@staticmethod
+	def settings(args):
 		cmd = ['adb', 'shell', 'settings']
 		cmd.extend(args)
-		return self.cmd(cmd)
+		return AdbPhoneControl.cmd(cmd)
 
-	def dumpsys(self, activity, grep=None):
+	@staticmethod
+	def dumpsys(activity, grep=None):
 		cmd = ['adb', 'shell', 'dumpsys', activity]
 		if grep:
 			cmd.extend(['| grep', grep])
-		return self.cmd(cmd)
+		return AdbPhoneControl.cmd(cmd)
 
-	def input(self, args):
+	@staticmethod
+	def input(args):
 		cmd = ['adb', 'shell', 'input']
 		cmd.extend(args)
-		self.cmd(cmd)
+		AdbPhoneControl.cmd(cmd)
 
 	def get_system_volume(self, usecase, scenario):
 		args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
@@ -80,28 +86,33 @@ class AdbPhoneControl():
 		except:
 			print('Get system volume fail!')
 
-	def key(self, keycode):
+	@staticmethod
+	def key(keycode):
 		if keycode.isdigit():
 			args = ['keyevent', keycode]
 		else:
 			args = ['keyevent', 'KEYCODE_'+keycode]
-		self.input(args)
+		AdbPhoneControl.input(args)
 
-	def key_volume_up(self):
+	@staticmethod
+	def key_volume_up():
 		args = ['keyevent', 'KEYCODE_VOLUME_UP']
-		self.input(args)
+		AdbPhoneControl.input(args)
 
-	def key_volume_down(self):
+	@staticmethod
+	def key_volume_down():
 		args = ['keyevent', 'KEYCODE_VOLUME_DOWN']
-		self.input(args)
+		AdbPhoneControl.input(args)
 
-	def key_call(self):
+	@staticmethod
+	def key_call():
 		args = ['keyevent', 'KEYCODE_CALL']
-		self.input(args)
+		AdbPhoneControl.input(args)
 
-	def key_endcall(self):
+	@staticmethod
+	def key_endcall():
 		args = ['keyevent', 'KEYCODE_ENDCALL']
-		self.input(args)
+		AdbPhoneControl.input(args)
 
 	def get_target_vol(self, volume, MINVol, MAXVol, NOMVol=None):
 		if volume and (type(volume) == int or (type(volume) == str and volume.isdigit())):
@@ -139,8 +150,9 @@ class AdbPhoneControl():
 			if cnt >= 3:
 				raise Exception('Fail to set the target volume!')
 
-	def call_state(self, sim=0):
-		ret = self.dumpsys('telephony.registry', 'mCallState')
+	@staticmethod
+	def call_state(sim=0):
+		ret = AdbPhoneControl.dumpsys('telephony.registry', 'mCallState')
 		states = re.findall(r'mCallState=(\d)', ret, flags=re.M)
 		# 0:idle, 1:ringing, 2:incall
 		if sim > len(states) or sim < 0:
