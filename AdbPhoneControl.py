@@ -57,7 +57,7 @@ class AdbPhoneControl():
 	@staticmethod
 	def devices():
 		ret = AdbPhoneControl.cmd(['adb', 'devices'])
-		devices = re.findall(r'^([a-zA-Z0-9]*)\s*?(device|unauthorized)$', ret, flags=re.M)
+		devices = re.findall(r'^([a-zA-Z0-9.:]*)\s*?(device|unauthorized)$', ret, flags=re.M)
 		return dict(devices)
 
 	@staticmethod
