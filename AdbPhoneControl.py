@@ -1,4 +1,4 @@
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 import subprocess
 import re
@@ -9,7 +9,7 @@ class CallState():
 	RING = '1'
 	INCALL = '2'
 
-def cmd(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
+def run(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
 	ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 	return ret.stdout.strip()
 
@@ -53,30 +53,30 @@ def connected(sn=None, m=False):
 	return connected
 
 def devices():
-	ret = cmd(['adb', 'devices'])
+	ret = run(['adb', 'devices'])
 	devices = re.findall(r'^([a-zA-Z0-9.:]*)\s*?(device|unauthorized)$', ret, flags=re.M)
 	return dict(devices)
 
 def root():
-	ret = cmd(['adb', 'root'])
+	ret = run(['adb', 'root'])
 	if 'adbd as root' not in ret:
 		raise Exception('Run adb root fail!')
 
 def settings(args):
 	cmd = ['adb', 'shell', 'settings']
 	cmd.extend(args)
-	return cmd(cmd)
+	return run(cmd)
 
 def dumpsys(activity, grep=None):
 	cmd = ['adb', 'shell', 'dumpsys', activity]
 	if grep:
 		cmd.extend(['| grep', grep])
-	return cmd(cmd)
+	return run(cmd)
 
 def input(args):
 	cmd = ['adb', 'shell', 'input']
 	cmd.extend(args)
-	cmd(cmd)
+	run(cmd)
 
 def get_system_volume(usecase, scenario):
 	args = ['get', 'system', 'volume_'+usecase+'_'+scenario]
