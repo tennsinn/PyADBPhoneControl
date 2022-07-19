@@ -1,5 +1,5 @@
 from setuptools import setup
-from ADBPhoneControl import __version__
+from src.ADBPhoneControl import __version__
 
 setup(
     name='ADBPhoneControl',
@@ -10,5 +10,6 @@ setup(
     author_email='rampage@tennsinn.com',
     url='https://github.com/tennsinn/PyADBPhoneControl',
     license='GNU General Public License v3.0',
+    package_dir={'': 'src'},
     py_modules=['ADBPhoneControl'],
 )
