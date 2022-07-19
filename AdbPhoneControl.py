@@ -1,4 +1,4 @@
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 import subprocess
 import re
@@ -10,7 +10,11 @@ class CallState():
 	INCALL = '2'
 
 def run(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
-	ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
+	try:
+		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
+	except subprocess.CalledProcessError:
+		subprocess.run(['adb', 'kill-server'], capture_output=capture_output, shell=shell, check=check, encoding=encoding)
+		ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
 	return ret.stdout.strip()
 
 def connected(sn=None, m=False):
