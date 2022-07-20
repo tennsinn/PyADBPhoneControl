@@ -1,4 +1,4 @@
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 import subprocess
 import re
@@ -14,6 +14,7 @@ def run(cmd, capture_output=True, shell=True, check=True, encoding='utf-8'):
         ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
     except subprocess.CalledProcessError:
         subprocess.run(['adb', 'kill-server'], capture_output=capture_output, shell=shell, check=check, encoding=encoding)
+        time.sleep(5)
         ret = subprocess.run(cmd, capture_output=capture_output, shell=shell, check=check, encoding=encoding)
     return ret.stdout.strip()
 
@@ -55,6 +56,10 @@ def connected(sn=None, m=False):
     elif m:
         print(msg)
     return connected
+
+def kill():
+    cmd = ['adb', 'kill-server']
+    return run(cmd)
 
 def devices():
     ret = run(['adb', 'devices'])
