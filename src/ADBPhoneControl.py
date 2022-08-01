@@ -1,4 +1,4 @@
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 
 import subprocess
 import re
@@ -180,7 +180,7 @@ def check_vol_change(usecase, scenario):
 
 def stream_volumes(stream):
     ret = dumpsys('audio')
-    states = re.search(r'- STREAM_'+stream+r':(\n* *[^-]*?\n* *)?Min: *(?P<Min>\d+)(\n* *[^-]*?\n* *)?Max: *(?P<Max>\d+)(\n* *[^-]*?\n* *)?streamVolume: *(?P<streamVolume>\d+)(\n* *[^-]*?\n* *)?Current: *(?P<Current>(?: ?\d+ \(.*?\): \d+,?)+)(\n* *[^-]*?\n* *)?Devices: *(?P<Devices>.*?)\n', ret, re.S)
+    states = re.search(r'- STREAM_'+stream+r':(\n* *[^-]*?\n* *)?Min: *(?P<Min>\d+)(\n* *[^-]*?\n* *)?Max: *(?P<Max>\d+)(\n* *[^-]*?\n* *)?streamVolume: *(?P<streamVolume>\d+)(\n* *[^-]*?\n* *)?Current: *(?P<Current>(?: ?\d+ \(.*?\): \d+,?)+)(\n* *[^-]*?\n* *)?Devices: *(?P<Devices>.*?(?:\(.*?\))?)\n', ret, re.S)
     if not states:
         raise Exception('Do not find the related stream volumes.')
     return states.groupdict()
