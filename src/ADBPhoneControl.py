@@ -1,4 +1,4 @@
-__version__ = '0.9.2'
+__version__ = '0.9.3'
 
 import subprocess
 import re
@@ -59,6 +59,10 @@ def connected(sn=None, m=False):
 
 def kill():
     cmd = ['adb', 'kill-server']
+    return run(cmd)
+
+def connect(addr):
+    cmd = ['adb', 'connect', addr]
     return run(cmd)
 
 def devices():
