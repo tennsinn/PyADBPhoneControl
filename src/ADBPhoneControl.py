@@ -1,4 +1,4 @@
-__version__ = '0.9.4'
+__version__ = '0.9.5'
 
 import subprocess
 import re
@@ -144,18 +144,18 @@ def set_vol_by_key(usecase, scenario, volume, MINVol, MAXVol, NOMVol):
     cnt = 0
     target = get_target_vol(volume, MINVol, MAXVol, NOMVol)
     last = current = get_system_volume(usecase, scenario)
-    while current != target and cnt < 3:
+    while current != target and cnt <= 3:
         if current > target:
             key_volume_down()
-        elif current < target:
+        else:
             key_volume_up()
         current = get_system_volume(usecase, scenario)
         if current == last:
             cnt += 1
         else:
             last = current
-        if cnt >= 3:
-            raise Exception('Fail to set the target volume!')
+    if cnt > 3:
+        raise Exception('Fail to set the target volume!')
 
 def call_state(sim=0):
     ret = dumpsys('telephony.registry', 'mCallState')
