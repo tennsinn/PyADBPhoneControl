@@ -1,4 +1,4 @@
-__version__ = '0.9.5'
+__version__ = '0.9.6'
 
 import subprocess
 import re
@@ -128,24 +128,11 @@ def key_endcall():
     args = ['keyevent', 'KEYCODE_ENDCALL']
     input(args)
 
-def get_target_vol(volume, MINVol, MAXVol, NOMVol=None):
-    if volume and (type(volume) == int or (type(volume) == str and volume.isdigit())):
-        target = int(volume)
-    elif volume and type(volume) == str and re.fullmatch(r'^(MAX|NOM|MIN)?(\+|\-)?\d*$', volume, re.I):
-        if NOMVol == None and 'NOM' in volume.upper():
-            raise Exception('Missing value of NOM volume!')
-        volume = re.sub(r'(MAX|NOM|MIN)', r'\1Vol', volume.upper(), 0)
-        target = eval(volume)
-    else :
-        raise Exception('Invalid volume value!')
-    return max(min(target, MAXVol), MINVol)
-
-def set_vol_by_key(usecase, scenario, volume, MINVol, MAXVol, NOMVol):
+def set_vol_by_key(usecase, scenario, volume):
     cnt = 0
-    target = get_target_vol(volume, MINVol, MAXVol, NOMVol)
     last = current = get_system_volume(usecase, scenario)
-    while current != target and cnt <= 3:
-        if current > target:
+    while current != volume and cnt <= 3:
+        if current > volume:
             key_volume_down()
         else:
             key_volume_up()
